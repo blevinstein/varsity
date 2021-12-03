@@ -11,9 +11,13 @@
   "dependencies": {
     "@maticnetwork/maticjs": "^3.0.0",
     "@maticnetwork/maticjs-web3": "^1.0.0",
+    "@truffle/hdwallet-provider": "^2.0.0",
     "arb-ts": "^1.0.2",
     "ethers": "^5.5.2",
+    "truffle": "^5.4.23",
+    "truffle-plugin-verify": "^0.5.18",
     "web3": "^1.6.1",
+    "yargs": "^17.3.0",
     "zksync": "^0.11.6"
   }
 }
