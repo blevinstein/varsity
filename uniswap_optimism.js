@@ -8,10 +8,11 @@ const { CurrencyAmount, Ether, Percent, Token, TradeType } = require('@uniswap/s
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-const UNISWAP_V3_SWAP_ROUTER_ADDRESS = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
+const UNISWAP_V3_SWAP_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 
 // Optimism
 const CHAIN_ID = 10;
+const WETH_ADDRESS = '0x4200000000000000000000000000000000000006';
 const provider = new ethers.providers.JsonRpcProvider(
     'https://mainnet.optimism.io');
 
@@ -38,6 +39,12 @@ function getJson(url) {
 function getCurrency(symbol, tokenData) {
   if (symbol == 'ETH') {
     return Ether.onChain(CHAIN_ID);
+  } else if (symbol == 'WETH') {
+    return new Token(CHAIN_ID,
+        WETH_ADDRESS,
+        18,
+        'WETH',
+        'Wrapped Ether');
   } else {
     const tokenDatum = tokenData.tokens.find(t => t.symbol == symbol && t.chainId == CHAIN_ID)
         || (() => { throw Error(`Token not found: ${symbol}`); })();
@@ -70,13 +77,6 @@ async function main() {
   const fromCurrency = getCurrency(fromToken, tokenData);
   const toCurrency = getCurrency(toToken, tokenData);
 
-  /* TODO: check token balances
-  const balance = await provider.getBalance(address);
-  if (balance < amount * 1e18) {
-    throw Error(`Unsufficient funds: ${balance / 1e18} < ${amount}`);
-  }
-  */
-
   const route = await router.route(
     CurrencyAmount.fromRawAmount(fromCurrency, rawAmount * 1e18),
     toCurrency,
@@ -84,7 +84,7 @@ async function main() {
     {
       recipient: address,
       slippageTolerance: new Percent(5, 100),
-      deadline: 100
+      deadline: 60 * 60,
     }
   );
   console.log(`Found route! Cost \$${route.estimatedGasUsedUSD.toFixed()}`);
