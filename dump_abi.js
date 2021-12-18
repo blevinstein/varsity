@@ -11,8 +11,9 @@ async function main() {
 
   if (argv.interface) {
     const interface = JSON.parse(fs.readFileSync(argv.interface));
-    for (let method of interface.abi) {
-      console.log(`${method.name} => ${web3.eth.abi.encodeFunctionSignature(method)}`);
+    for (let method of interface.abi.filter(i => i.type == 'function')) {
+      const string = `${method.name}(${(method.inputs || []).map(i => i.type).join(',')})`;
+      console.log(`${string} => ${web3.eth.abi.encodeFunctionSignature(string)}`);
     }
   }
 
