@@ -84,7 +84,7 @@ async function main() {
     {
       recipient: address,
       slippageTolerance: new Percent(5, 100),
-      deadline: 60 * 60,
+      deadline: Math.floor(new Date().getTime() / 1000) + /* 6 hours */ 6 * 60 * 60,
     }
   );
   console.log(`Found route! Cost \$${route.estimatedGasUsedUSD.toFixed()}`);
