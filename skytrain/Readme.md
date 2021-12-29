@@ -19,8 +19,6 @@ Operation:
 - Details (string/json), blob containing execution details
   - Operation type
   - Arguments
-- WaitAfterMin (duration)
-- WaitAfterMax (duration)
 - Status (TODO, DONE, FAILED)
 
 ## Runner
