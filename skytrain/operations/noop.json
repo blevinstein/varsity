@@ -1,0 +1,18 @@
+[
+  {
+    "type": "noop",
+    "waitAfterSeconds": 3600
+  },
+  {
+    "type": "noop",
+    "waitAfterSeconds": 3600
+  },
+  {
+    "type": "noop",
+    "waitAfterSeconds": 3600
+  },
+  {
+    "type": "noop",
+    "waitAfterSeconds": 3600
+  }
+]
