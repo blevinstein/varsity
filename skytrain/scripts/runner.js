@@ -42,7 +42,7 @@ async function main() {
 
   const region = argv.region || 'TEST';
 
-  const client = new Client(argv.config ? JSON.parse(argv.config) : {});
+  const client = new Client(argv.config ? JSON.parse(fs.readFileSync(argv.config)) : {});
   await client.connect();
   console.log('Connected');
 

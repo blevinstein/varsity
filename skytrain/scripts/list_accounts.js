@@ -1,5 +1,6 @@
 
 const async = require('async');
+const fs = require('fs');
 const { Client } = require('pg');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
@@ -13,7 +14,7 @@ const ToStatus = {
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;
 
-  const client = new Client(argv.config ? JSON.parse(argv.config) : {});
+  const client = new Client(argv.config ? JSON.parse(fs.readFileSync(argv.config)) : {});
   await client.connect();
   console.log('Connected');
 
