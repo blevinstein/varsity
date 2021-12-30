@@ -10,7 +10,7 @@ function randomExponential(average) {
 
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;
-  const mnemonic = argv.mnemonic;
+  const mnemonic = argv.mnemonic || ethers.Wallet.createRandom().mnemonic.phrase;
   const output = argv.output;
   const n = argv.n;
   const regions = argv.regions ? argv.regions.split(/[\s,]/) : ['TEST'];
@@ -18,6 +18,8 @@ async function main() {
 
   // Offset from current time
   let lastTime = new Date();
+
+  console.log(`Generating ${n} accounts using mnemonic phrase: ${mnemonic}`);
 
   const accounts = [];
   for (let i = 0; i < n; ++i) {
