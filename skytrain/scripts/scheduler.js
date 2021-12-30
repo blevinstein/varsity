@@ -39,8 +39,8 @@ async function main() {
 
     console.log(`Create account: ${account.address}`);
     await client.query({
-      text: 'INSERT INTO Accounts(Address,Region,WaitUntil) VALUES ($1,$2,$3)',
-      values: [account.address, account.region, new Date(account.startTime * 1000)]
+      text: 'INSERT INTO Accounts(Address,PrivateKey,Region,WaitUntil) VALUES ($1,$2,$3,$4)',
+      values: [account.address, account.privateKey, account.region, new Date(account.startTime * 1000)]
     });
 
     console.log(`Scheduling ${operations.length} operations`);

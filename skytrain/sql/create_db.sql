@@ -1,7 +1,8 @@
 CREATE TABLE Accounts (
         Address VARCHAR(64),
+        PrivateKey VARCHAR(128) NOT NULL,
+        Region VARCHAR(16) NOT NULL,
         WaitUntil TIMESTAMP,
-        Region VARCHAR(16),
         PRIMARY KEY(Address)
 );
 

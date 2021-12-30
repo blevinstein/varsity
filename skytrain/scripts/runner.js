@@ -26,7 +26,7 @@ function randomExponential(average) {
   return -Math.log(Math.random()) * average;
 }
 
-async function doOperation(address, operation) {
+async function doOperation(address, privateKey, operation) {
   switch (operation.type) {
     case 'noop':
       return;
@@ -47,7 +47,7 @@ async function main() {
   console.log('Connected');
 
   const result = await client.query({
-    text: 'SELECT a.Address,o.Priority,o.Details,o.Status FROM Accounts a JOIN Operations o USING (Address) ' +
+    text: 'SELECT a.Address,a.PrivateKey,o.Priority,o.Details,o.Status FROM Accounts a JOIN Operations o USING (Address) ' +
         'WHERE a.WaitUntil < NOW() AND a.Region = $1 AND o.Status != $2',
     values: [region, Status.DONE]
   });
@@ -65,7 +65,7 @@ async function main() {
       const details = JSON.parse(nextOperation.details);
       const delaySeconds = randomExponential(details.waitAfterSeconds);
       console.log(`Address: ${address} Operation: ${nextOperation.priority} ${nextOperation.details}`);
-      await doOperation(address, details);
+      await doOperation(address, nextOperation.privatekey, details);
       await client.query({
         text: 'UPDATE Operations SET Status=$1 WHERE Address=$2 AND Priority=$3',
         values: [Status.DONE, address, nextOperation.priority],

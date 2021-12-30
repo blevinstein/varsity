@@ -19,18 +19,23 @@ async function main() {
   // Offset from current time
   let lastTime = new Date();
 
-  const addresses = [];
+  const accounts = [];
   for (let i = 0; i < n; ++i) {
-    const address = ethers.Wallet.fromMnemonic(mnemonic, `m/44'/60'/0'/0/${i}`).address;
+    const wallet = ethers.Wallet.fromMnemonic(mnemonic, `m/44'/60'/0'/0/${i}`);
     const region = regions[i % regions.length];
     const delayHours = randomExponential(averageOffsetHours);
     const startTime = new Date(lastTime.getTime() + delayHours * 60 * 60 * 1000);
     lastTime = startTime;
-    console.log(`Address ${address} region ${region} starts at ${startTime}`);
-    addresses.push({address, region, startTime: Math.floor(startTime.getTime() / 1000)});
+    console.log(`Address ${wallet.address} region ${region} starts at ${startTime}`);
+    accounts.push({
+      address: wallet.address,
+      privateKey: wallet.privateKey,
+      region,
+      startTime: Math.floor(startTime.getTime() / 1000)
+    });
   }
 
-  fs.writeFileSync(output, JSON.stringify(addresses));
+  fs.writeFileSync(output, JSON.stringify(accounts));
 
   console.log('Done');
 }
