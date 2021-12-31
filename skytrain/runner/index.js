@@ -3,7 +3,7 @@ const async = require('async');
 const fs = require('fs');
 const { Client } = require('pg');
 
-const { check, eq, Status, ToStatus } = require('../scripts/common');
+const { check, eq, Status, ToStatus } = require('./common');
 
 async function doOperation(address, privateKey, operation) {
   switch (operation.type) {
