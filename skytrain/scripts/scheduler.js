@@ -6,6 +6,21 @@ const { hideBin } = require('yargs/helpers');
 
 const { check, eq, Status, ToStatus, randomExponential } = require('./common');
 
+function randomize(value) {
+  if (typeof value == 'number') {
+    return value;
+  }
+
+  if (value.op == 'random') {
+    let result = randomExponential(check(value.average))
+    if (value.min) result = Math.max(value.min, result);
+    if (value.max) result = Math.min(value.max, result);
+    return result;
+  }
+
+  throw Error(`Unexpected value: ${value}`);
+}
+
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;
 
@@ -17,7 +32,6 @@ async function main() {
   console.log('Connected');
 
   const existingAccounts = (await client.query('SELECT Address,Region FROM Accounts')).rows;
-  console.log(existingAccounts);
 
   for (let account of accounts) {
     if (existingAccounts.find(existingAcct => eq(account.address, existingAcct.address))) {
@@ -32,7 +46,7 @@ async function main() {
 
     console.log(`Randomizing ${operations.length} operations`);
     operations.forEach(operation => {
-      operation.waitAfterSeconds = randomExponential(operation.waitAfterSeconds);
+      operation.waitAfterSeconds = randomize(operation.waitAfterSeconds);
     });
 
     console.log(`Scheduling ${operations.length} operations`);

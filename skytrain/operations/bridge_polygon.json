@@ -3,12 +3,12 @@
     "type": "bridge_polygon",
     "amount": "0.1",
     "token": "ETH",
-    "waitAfterSeconds": 3600
+    "waitAfterSeconds": { "op": "random", "average": 3600, "min": 600 }
   },
   {
     "type": "bridge_polygon",
     "amount": "10",
     "token": "WMATIC",
-    "waitAfterSeconds": 3600
+    "waitAfterSeconds": { "op": "random", "average": 3600, "min": 600 }
   }
 ]
