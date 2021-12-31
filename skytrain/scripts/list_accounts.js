@@ -15,14 +15,15 @@ async function main() {
   console.log('Connected');
 
   const result = await client.query(
-      'SELECT a.Address,o.Status,COUNT(*) FROM Accounts a LEFT JOIN Operations o USING (Address) GROUP BY (Address, Status)');
+      'SELECT a.Address,o.Status,o.Priority,o.Details FROM Accounts a LEFT JOIN Operations o USING (Address)');
 
   const resultByAddress = await async.groupBy(result.rows, async row => row.address);
 
   for (let [address, rows] of Object.entries(resultByAddress)) {
     console.log(`Address: ${address}`);
+    rows.sort((a, b) => a.priority - b.priority);
     for (let row of rows) {
-      console.log(`\t${row.count} tasks ${ToStatus[row.status]}`);
+      console.log('\t' + [ToStatus[row.status], row.priority, row.details].join('\t'));
     }
   }
 

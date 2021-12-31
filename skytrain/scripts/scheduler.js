@@ -4,13 +4,13 @@ const { Client } = require('pg');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-const { check, eq, Status, ToStatus } = require('./common');
+const { check, eq, Status, ToStatus, randomExponential } = require('./common');
 
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;
 
   const accounts = check(JSON.parse(fs.readFileSync(argv.accounts)));
-  const operations = check(JSON.parse(fs.readFileSync(argv.operations)));
+  let operations = check(JSON.parse(fs.readFileSync(argv.operations)));
 
   const client = new Client(argv.config ? JSON.parse(fs.readFileSync(argv.config)) : {});
   await client.connect();
@@ -28,6 +28,11 @@ async function main() {
     await client.query({
       text: 'INSERT INTO Accounts(Address,PrivateKey,Region,WaitUntil) VALUES ($1,$2,$3,$4)',
       values: [account.address, account.privateKey, account.region, new Date(account.startTime * 1000)]
+    });
+
+    console.log(`Randomizing ${operations.length} operations`);
+    operations.forEach(operation => {
+      operation.waitAfterSeconds = randomExponential(operation.waitAfterSeconds);
     });
 
     console.log(`Scheduling ${operations.length} operations`);

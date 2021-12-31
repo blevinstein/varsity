@@ -26,7 +26,7 @@ async function main() {
     const delayHours = randomExponential(averageOffsetHours);
     const startTime = new Date(lastTime.getTime() + delayHours * 60 * 60 * 1000);
     lastTime = startTime;
-    console.log(`Address ${wallet.address} region ${region} starts at ${startTime}`);
+    console.log(`Address ${wallet.address} region ${region} starts ${startTime}`);
     accounts.push({
       address: wallet.address,
       privateKey: wallet.privateKey,
@@ -35,7 +35,7 @@ async function main() {
     });
   }
 
-  fs.writeFileSync(output, JSON.stringify(accounts));
+  fs.writeFileSync(output, JSON.stringify(accounts, null, 4));
 
   console.log('Done');
 }
