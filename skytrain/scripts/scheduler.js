@@ -45,18 +45,20 @@ async function main() {
     });
 
     console.log(`Randomizing ${operations.length} operations`);
-    operations.forEach(operation => {
-      operation.waitAfterSeconds = randomize(operation.waitAfterSeconds);
+    const randomOperations = operations.map(operation => {
+      const randomOperation = Object.assign({}, operation);
+      randomOperation.waitAfterSeconds = randomize(operation.waitAfterSeconds);
+      return randomOperation;
     });
 
-    console.log(`Scheduling ${operations.length} operations`);
-    for (let i = 0; i < operations.length; ++i) {
+    console.log(`Scheduling ${randomOperations.length} operations`);
+    for (let i = 0; i < randomOperations.length; ++i) {
       await client.query({
         text: 'INSERT INTO Operations(Address,Priority,Details,Status) VALUES ($1,$2,$3,$4)',
         values: [
           account.address,
           i,
-          JSON.stringify(operations[i]),
+          JSON.stringify(randomOperations[i]),
           Status.TODO
         ]
       });
