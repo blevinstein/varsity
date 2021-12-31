@@ -4,17 +4,15 @@ const ethers = require('ethers');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-function randomExponential(average) {
-  return -Math.log(Math.random()) * average;
-}
+const { check, randomExponential } = require('./common');
 
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;
   const mnemonic = argv.mnemonic || ethers.Wallet.createRandom().mnemonic.phrase;
-  const output = argv.output;
-  const n = argv.n;
+  const output = check(argv.output);
+  const n = argv.n || 1;
   const regions = argv.regions ? argv.regions.split(/[\s,]/) : ['TEST'];
-  const averageOffsetHours = argv.offsetHours;
+  const averageOffsetHours = argv.offsetHours || 24;
 
   // Offset from current time
   let lastTime = new Date();

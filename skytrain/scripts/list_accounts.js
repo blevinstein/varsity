@@ -5,11 +5,7 @@ const { Client } = require('pg');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-const ToStatus = {
-  0: 'TODO',
-  1: 'DONE',
-  2: 'FAILED'
-};
+const { Status, ToStatus } = require('./common');
 
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;

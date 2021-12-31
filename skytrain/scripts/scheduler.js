@@ -4,20 +4,7 @@ const { Client } = require('pg');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-const Status = {
-  TODO: 0,
-  DONE: 1,
-  FAILED: 2,
-};
-
-function eq(a, b) {
-  return a.toLowerCase() == b.toLowerCase();
-}
-
-function check(value, message = 'Unexpected null') {
-  if (!value) throw Error(message);
-  return value;
-}
+const { check, eq, Status, ToStatus } = require('./common');
 
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;

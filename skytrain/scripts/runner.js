@@ -5,26 +5,7 @@ const { Client } = require('pg');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-const Status = {
-  TODO: 0,
-  DONE: 1,
-  FAILED: 2,
-};
-
-const ToStatus = {
-  0: 'TODO',
-  1: 'DONE',
-  2: 'FAILED',
-};
-
-function check(value, message = 'Unexpected null') {
-  if (!value) throw Error(message);
-  return value;
-}
-
-function randomExponential(average) {
-  return -Math.log(Math.random()) * average;
-}
+const { check, eq, Status, ToStatus } = require('./common');
 
 async function doOperation(address, privateKey, operation) {
   switch (operation.type) {
@@ -63,7 +44,7 @@ async function main() {
 
     try {
       const details = JSON.parse(nextOperation.details);
-      const delaySeconds = randomExponential(details.waitAfterSeconds);
+      const delaySeconds = details.waitAfterSeconds;
       console.log(`Address: ${address} Operation: ${nextOperation.priority} ${nextOperation.details}`);
       await doOperation(address, nextOperation.privatekey, details);
       await client.query({
