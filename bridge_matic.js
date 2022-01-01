@@ -11,19 +11,14 @@ use(Web3ClientPlugin);
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-const INFURA_ID = "07bc63faa17b4eae96c758bca58cfa85";
-
 const ethProvider = new ethers.providers.JsonRpcProvider(
-    `https://mainnet.infura.io/v3/${INFURA_ID}`);
+    `https://cloudflare-eth.com`);
 const maticProvider = new ethers.providers.JsonRpcProvider(
     'https://polygon-rpc.com');
 
 function longToString(number) {
   return BigInt(number).toString();
 }
-
-const OPTIMISM_GATEWAY = '0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1';
-const OPTIMISM_L2_GATEWAY = '0x4200000000000000000000000000000000000010';
 
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;
@@ -54,10 +49,21 @@ async function main() {
   }
 
 
-  console.log(`Bridge ${amount} ETH for address ${address}`);
-  if (!dryRun) {
-    const result = await (await posClient.depositEther(longToString(argv.amount * 1e18), address)).promise;
-    console.log(result);
+  if (argv.token === undefined || argv.token == 'ETH') {
+    console.log(`Bridge ${amount} ETH for address ${address}`);
+    if (!dryRun) {
+      const result = await (await posClient.depositEther(longToString(argv.amount * 1e18), address)).promise;
+      console.log(result);
+    }
+  } else if (argv.token == 'MATIC') {
+    console.log(`Bridge ${amount} MATIC for address ${address}`);
+    if (!dryRun) {
+      const maticToken = posClient.erc20('0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0', true);
+      const result = await (await maticToken.deposit(longToString(argv.amount * 1e18), address)).promise;
+      console.log(result);
+    }
+  } else {
+    throw Error(`Unexpected token: ${argv.token}`);
   }
 
   console.log('Done');
