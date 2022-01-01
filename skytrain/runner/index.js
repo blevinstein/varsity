@@ -23,7 +23,7 @@ exports.run = async (input) => {
 
   const client = new Client(config);
   await client.connect();
-  console.log(`Connected! Region is ${region}\nConfig: ${JSON.stringify(config)}`);
+  console.log(`Connected! Region is ${region}`);
 
   const result = await client.query({
     text: 'SELECT a.Address,a.PrivateKey,o.Priority,o.Details,o.Status FROM Accounts a JOIN Operations o USING (Address) ' +
