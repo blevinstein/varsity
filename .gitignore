@@ -2,6 +2,6 @@
 **/package-lock.json
 **/node_modules/
 skytrain/accounts/*
-skytrain/runner/configs/*
+skytrain/configs/*
 skytrain/runner/deploy.zip
 
