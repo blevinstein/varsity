@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
-
-aws lambda update-function-code --function-name skytrain-runner --zip-file fileb://deploy.zip
+for region in dev; do
+echo "deploy to skytrain-runner-$region"
+aws lambda update-function-code --function-name "skytrain-runner-$region" --zip-file fileb://deploy.zip
+done
