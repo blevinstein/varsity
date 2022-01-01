@@ -68,7 +68,7 @@ aws events put-rule \
     --region "$region" \
     --name skytrain-runner-$region \
     --schedule-expression "cron(5/9 * * * ? *)"
-JSON="{\"region\":\"$region\", \"config\":\"configs/test.json\"}"
+JSON="{\"region\":\"$region\"}"
 aws events put-targets \
     --region "$region" \
     --rule skytrain-runner-$region \

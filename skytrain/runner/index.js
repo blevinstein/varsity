@@ -18,7 +18,8 @@ async function doOperation(address, privateKey, operation) {
 
 exports.run = async (input) => {
   const region = input.region || 'TEST';
-  const config = input.config ? JSON.parse(fs.readFileSync(input.config)) : {};
+
+  const config = JSON.parse(fs.readFileSync('config.json'));
 
   const client = new Client(config);
   await client.connect();
