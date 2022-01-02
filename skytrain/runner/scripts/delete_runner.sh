@@ -35,4 +35,9 @@ aws iam delete-role \
     --region "$region" \
     --role-name skytrain-runner-$region
 
+echo "Deleting bucket s3://skytrain-runner-code-$region"
+aws s3api delete-bucket \
+    --region "$region" \
+    --bucket skytrain-runner-code-$region
+
 done
