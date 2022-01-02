@@ -3,12 +3,20 @@ const async = require('async');
 const fs = require('fs');
 const { Client } = require('pg');
 
+const matic = require('./chains/matic');
 const { check, eq, Status, ToStatus } = require('./common');
 
 async function doOperation(address, privateKey, operation) {
   switch (operation.type) {
     case 'noop':
       return;
+    case 'bridge_matic':
+      const input = operation;
+      input.address = address;
+      input.privateKey = privateKey;
+      console.log(`Bridge matic: ${JSON.stringify(input)}`);
+      await matic.bridge(input);
+      break;
     case 'fail':
       throw Error('Fail');
     default:
@@ -19,7 +27,7 @@ async function doOperation(address, privateKey, operation) {
 exports.run = async (input) => {
   const region = input.region || 'TEST';
 
-  const config = JSON.parse(fs.readFileSync('config.json'));
+  const config = JSON.parse(fs.readFileSync(input.configFile || 'config.json'));
 
   const client = new Client(config);
   await client.connect();
