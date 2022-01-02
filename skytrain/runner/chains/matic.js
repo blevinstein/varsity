@@ -45,19 +45,19 @@ exports.bridge = async (options) => {
 
   switch (token) {
     case 'ETH':
-      console.log(`Bridge ${amount/1e18} ETH for address ${address}`);
-      const result = await (await posClient.depositEther(longToString(amount), address)).promise;
+      console.log(`Bridge ${amount} ETH for address ${address}`);
+      const result = await (await posClient.depositEther(longToString(amount * 1e18), address)).promise;
       console.log(result);
       break;
     case 'MATIC':
-      console.log(`Bridge ${amount/1e18} MATIC for address ${address}`);
+      console.log(`Bridge ${amount} MATIC for address ${address}`);
       const maticToken = posClient.erc20(mainnet
               ? '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0'
               : '0xa108830a23a9a054fff4470a8e6292da0886a4d4',
           true);
       const approveResult = await (await maticToken.approveMax()).promise;
       console.log(approveResult);
-      const depositResult = await (await maticToken.deposit(longToString(amount), address)).promise;
+      const depositResult = await (await maticToken.deposit(longToString(amount * 1e18), address)).promise;
       console.log(depositResult);
       break;
     default:
