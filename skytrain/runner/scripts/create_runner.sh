@@ -54,12 +54,20 @@ aws iam put-role-policy \
     --policy-name skytrain-runner-log-policy-$region \
     --policy-document="$LOG_GROUP_POLICY"
 
+echo "Create bucket s3://skytrain-runner-code-$region"
+aws s3api create-bucket \
+    --region "$region" \
+    --bucket skytrain-runner-code-$region \
+    --create-bucket-configuration "{\"LocationConstraint\": \"$region\"}"
+echo "Deploy function code to s3://skytrain-runner-code-$region"
+aws s3 cp deploy.zip s3://skytrain-runner-code-$region/deploy.zip
+
 echo "Create function skytrain-runner-$region"
 aws lambda create-function \
     --region "$region" \
     --function-name skytrain-runner-$region \
     --runtime nodejs14.x \
-    --zip-file fileb://deploy.zip \
+    --code S3Bucket=skytrain-runner-code-$region,S3Key=deploy.zip \
     --handler index.run \
     --role arn:aws:iam::$AWS_ACCOUNT_ID:role/skytrain-runner-$region
 

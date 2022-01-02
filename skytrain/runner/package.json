@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@maticnetwork/maticjs": "^3.1.0",
+    "@maticnetwork/maticjs-ethers": "^1.0.0",
     "async": "^3.2.2",
     "ethers": "^5.5.2",
     "pg": "^8.7.1",
