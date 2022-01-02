@@ -10,11 +10,11 @@ async function doOperation(address, privateKey, operation) {
   switch (operation.type) {
     case 'noop':
       return;
-    case 'bridge_matic':
+    case 'bridge_polygon':
       const input = operation;
       input.address = address;
       input.privateKey = privateKey;
-      console.log(`Bridge matic: ${JSON.stringify(input)}`);
+      console.log(`Bridge Polygon: ${JSON.stringify(input)}`);
       await matic.bridge(input);
       break;
     case 'fail':
