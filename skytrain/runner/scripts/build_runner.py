@@ -10,7 +10,6 @@ def main():
   flags = parser.parse_args()
 
   with ZipFile('deploy.zip', 'w') as f:
-    f.write('../scripts/common.js', 'common.js')
     for environment in ['test']:
       f.write('../configs/%s.json' % environment, 'config.json')
     for root,dirs,files in os.walk('.'):
@@ -20,6 +19,7 @@ def main():
         path = os.path.join(root, file)
         print('Adding %s' % path)
         f.write(path)
+    f.write('../scripts/common.js', 'common.js')
 
 if __name__ == '__main__':
   main()

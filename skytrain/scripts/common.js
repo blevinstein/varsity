@@ -4,6 +4,10 @@ function check(value, message = 'Unexpected null') {
   return value;
 }
 
+function eq(a, b) {
+  return a.toLowerCase() == b.toLowerCase();
+}
+
 const Status = {
   TODO: 0,
   DONE: 1,
@@ -16,8 +20,8 @@ const ToStatus = {
   2: 'FAILED',
 };
 
-function eq(a, b) {
-  return a.toLowerCase() == b.toLowerCase();
+function longToString(number) {
+  return BigInt(number).toString();
 }
 
 function randomExponential(average) {
@@ -29,5 +33,6 @@ module.exports = {
   eq,
   Status,
   ToStatus,
+  longToString,
   randomExponential,
 };
