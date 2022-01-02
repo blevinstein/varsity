@@ -15,7 +15,7 @@ async function main() {
   console.log('Connected');
 
   const result = await client.query(
-      'SELECT a.Address,a.WaitUntil,o.Status,o.Priority,o.Details '+
+      'SELECT a.Address,a.WaitUntil,a.Region,o.Status,o.Priority,o.Details '+
           'FROM Accounts a LEFT JOIN Operations o USING (Address)');
 
   const resultByAddress = await async.groupBy(result.rows, async row => row.address);
@@ -23,7 +23,7 @@ async function main() {
   for (let [address, rows] of Object.entries(resultByAddress)) {
     const waitUntil = rows[0].waituntil;
     const waitString = waitUntil > new Date() ? ` (paused until ${waitUntil})` : '';
-    console.log(`Address: ${address} ${waitString}`);
+    console.log(`Address: ${address}\t${rows[0].region}\t${waitString}`);
     rows.sort((a, b) => a.priority - b.priority);
     for (let row of rows) {
       console.log('\t' + [row.priority, ToStatus[row.status], row.details].join('\t'));
