@@ -60,7 +60,7 @@ aws s3api create-bucket \
     --bucket skytrain-runner-code-$region \
     --create-bucket-configuration "{\"LocationConstraint\": \"$region\"}"
 echo "Deploy function code to s3://skytrain-runner-code-$region"
-aws s3 cp deploy.zip s3://skytrain-runner-code-$region/deploy.zip
+aws s3 cp --region "$region" deploy.zip s3://skytrain-runner-code-$region/deploy.zip
 
 echo "Create function skytrain-runner-$region"
 aws lambda create-function \
