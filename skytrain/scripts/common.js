@@ -28,6 +28,20 @@ function randomExponential(average) {
   return -Math.log(Math.random()) * average;
 }
 
+function randomize(value) {
+  if (typeof value == 'number') {
+    return value;
+  } else if (typeof value == 'object' && value.op == 'random') {
+    let result = randomExponential(check(value.average))
+    if (value.roundTo) result = Math.round(result / value.roundTo) * value.roundTo;
+    if (value.min) result = Math.max(value.min, result);
+    if (value.max) result = Math.min(value.max, result);
+    return result;
+  }
+
+  throw Error(`Unexpected value: ${value} (${typeof value})`);
+}
+
 module.exports = {
   check,
   eq,
@@ -35,4 +49,5 @@ module.exports = {
   ToStatus,
   longToString,
   randomExponential,
+  randomize,
 };

@@ -12,10 +12,6 @@ async function main() {
   const output = check(argv.output);
   const n = argv.n || 1;
   const regions = argv.regions ? argv.regions.split(/[\s,]/) : ['TEST'];
-  const averageOffsetHours = argv.offsetHours || 24;
-
-  // Offset from current time
-  let lastTime = new Date();
 
   console.log(`Generating ${n} accounts using mnemonic phrase: ${mnemonic}`);
 
@@ -23,15 +19,11 @@ async function main() {
   for (let i = 0; i < n; ++i) {
     const wallet = ethers.Wallet.fromMnemonic(mnemonic, `m/44'/60'/0'/0/${i}`);
     const region = regions[i % regions.length];
-    const delayHours = randomExponential(averageOffsetHours);
-    const startTime = new Date(lastTime.getTime() + delayHours * 60 * 60 * 1000);
-    lastTime = startTime;
-    console.log(`Address ${wallet.address} region ${region} starts ${startTime}`);
+    console.log(`Address ${wallet.address} region ${region}`);
     accounts.push({
       address: wallet.address,
       privateKey: wallet.privateKey,
       region,
-      startTime: Math.floor(startTime.getTime() / 1000)
     });
   }
 
