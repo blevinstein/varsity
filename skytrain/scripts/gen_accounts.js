@@ -17,13 +17,16 @@ async function main() {
 
   const accounts = [];
   for (let i = 0; i < n; ++i) {
-    const wallet = ethers.Wallet.fromMnemonic(mnemonic, `m/44'/60'/0'/0/${i}`);
+    const path = `m/44'/60'/0'/0/${i}`;
+    const wallet = ethers.Wallet.fromMnemonic(mnemonic, path);
     const region = regions[i % regions.length];
     console.log(`Address ${wallet.address} region ${region}`);
     accounts.push({
       address: wallet.address,
       privateKey: wallet.privateKey,
       region,
+      mnemonic,
+      path,
     });
   }
 
