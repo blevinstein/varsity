@@ -72,10 +72,11 @@ aws lambda create-function \
     --role arn:aws:iam::$AWS_ACCOUNT_ID:role/skytrain-runner-$region
 
 echo "Create function skytrain-runner-$region"
+NONCE=$(($RANDOM % 10))
 aws events put-rule \
     --region "$region" \
     --name skytrain-runner-$region \
-    --schedule-expression "cron(5/9 * * * ? *)"
+    --schedule-expression "cron($NONCE/9 * * * ? *)"
 JSON="{\"region\":\"$region\"}"
 aws events put-targets \
     --region "$region" \
