@@ -7,7 +7,7 @@ const { Web3ClientPlugin } = require('@maticnetwork/maticjs-ethers');
 
 const { check, longToString } = require('../common');
 
-const INFURA_ID = "bd3efad5597142d48274be4f8fb0475b";
+const INFURA_ID = "07bc63faa17b4eae96c758bca58cfa85";
 
 use(Web3ClientPlugin);
 
