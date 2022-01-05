@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 if [ -z "$1" ]; then
-REGIONS="us-west-1 us-east-2 ap-south-1 eu-central-1 eu-west-2 eu-west-3 me-south-1 sa-east-1"
+REGIONS="ap-south-1 eu-central-1 eu-west-2 eu-west-3 me-south-1 sa-east-1"
 else
-REGIONS="$1"
+REGIONS="$@"
 fi
 
 for region in $REGIONS; do
@@ -36,6 +36,7 @@ aws iam delete-role \
     --role-name skytrain-runner-$region
 
 echo "Deleting bucket s3://skytrain-runner-code-$region"
+aws s3 rm --region "$region" s3://skytrain-runner-code-$region/deploy.zip
 aws s3api delete-bucket \
     --region "$region" \
     --bucket skytrain-runner-code-$region
