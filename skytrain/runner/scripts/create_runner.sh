@@ -70,6 +70,10 @@ aws lambda create-function \
     --code S3Bucket=skytrain-runner-code-$region,S3Key=deploy.zip \
     --handler index.run \
     --role arn:aws:iam::$AWS_ACCOUNT_ID:role/skytrain-runner-$region
+aws lambda update-function-configuration \
+    --region "$region" \
+    --function-name skytrain-runner-$region \
+    --timeout 60
 
 echo "Create function skytrain-runner-$region"
 NONCE=$(($RANDOM % 10))
