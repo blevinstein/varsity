@@ -11,6 +11,37 @@ const INFURA_ID = "07bc63faa17b4eae96c758bca58cfa85";
 
 use(Web3ClientPlugin);
 
+const getEthProvider = (mainnet) => new ethers.providers.JsonRpcProvider(mainnet
+    ? 'https://cloudflare-eth.com/'
+    : `https://goerli.infura.io/v3/${INFURA_ID}`);
+const getMaticProvider = (mainnet) => new ethers.providers.JsonRpcProvider(mainnet
+    ? 'https://polygon-rpc.com'
+    : 'https://rpc-mumbai.maticvigil.com/v1/5879797d6e4f3d3742e5ca26a1cfd3d38caa26e8');
+
+exports.checkBalance = async (options) => {
+  const amount = check(options.amount);
+  const mainnet = options.network == 'mainnet';
+  const address = check(options.address);
+  const token = options.token || 'ETH';
+
+  const ethProvider = getEthProvider(mainnet);
+  const maticProvider = getMaticProvider(mainnet);
+
+  switch (token) {
+    case 'ETH':
+      const balance = parseInt(await ethProvider.getBalance(address));
+      if (balance < amount) {
+        throw Error(`Insufficient balance: ${balance / 1e18} (needed ${amount})`);
+      } else {
+        console.log(`Sufficient balance: ${balance / 1e18} (needed ${amount})`);
+      }
+      break;
+    // TODO: case 'MATIC'
+    default:
+      throw Error(`Unexpected token: ${token}`);
+  }
+};
+
 exports.bridge = async (options) => {
   const amount = check(options.amount);
   const mainnet = options.network == 'mainnet';
@@ -21,13 +52,8 @@ exports.bridge = async (options) => {
   console.log(mainnet
       ? 'Setting up mainnet...'
       : 'Setting up testnet...');
-  const ethProvider = mainnet
-      //? new ethers.providers.JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`)
-      ? new ethers.providers.JsonRpcProvider('https://cloudflare-eth.com/')
-      : new ethers.providers.JsonRpcProvider(`https://goerli.infura.io/v3/${INFURA_ID}`);
-  const maticProvider = new ethers.providers.JsonRpcProvider(mainnet
-      ? 'https://polygon-rpc.com'
-      : 'https://rpc-mumbai.maticvigil.com/v1/5879797d6e4f3d3742e5ca26a1cfd3d38caa26e8');
+  const ethProvider = getEthProvider(mainnet);
+  const maticProvider = getMaticProvider(mainnet);
 
   const posClient = new POSClient();
   await posClient.init({
@@ -46,7 +72,7 @@ exports.bridge = async (options) => {
   switch (token) {
     case 'ETH':
       console.log(`Bridge ${amount} ETH for address ${address}`);
-      const result = await (await posClient.depositEther(longToString(amount * 1e18), address)).promise;
+      const result = await (await posClient.depositEther(longToString(amount), address)).promise;
       console.log(result);
       break;
     case 'MATIC':
@@ -57,7 +83,7 @@ exports.bridge = async (options) => {
           true);
       const approveResult = await (await maticToken.approveMax()).promise;
       console.log(approveResult);
-      const depositResult = await (await maticToken.deposit(longToString(amount * 1e18), address)).promise;
+      const depositResult = await (await maticToken.deposit(longToString(amount), address)).promise;
       console.log(depositResult);
       break;
     default:

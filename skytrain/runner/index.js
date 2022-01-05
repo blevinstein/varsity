@@ -14,8 +14,15 @@ async function doOperation(address, privateKey, operation) {
       const input = operation;
       input.address = address;
       input.privateKey = privateKey;
-      console.log(`Bridge Polygon: ${JSON.stringify(input)}`);
+      console.log(`bridge Polygon: ${JSON.stringify(input)}`);
       await matic.bridge(input);
+      break;
+    case 'checkBalance_polygon':
+      const input = operation;
+      input.address = address;
+      input.privateKey = privateKey;
+      console.log(`checkBalance Polygon: ${JSON.stringify(input)}`);
+      await matic.checkBalance(input);
       break;
     case 'fail':
       throw Error('Fail');

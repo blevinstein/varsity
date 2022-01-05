@@ -1,14 +1,14 @@
 [
   {
     "type": "bridge_polygon",
-    "amount": { "op": "random", "average": 0.2, "min": 0.1, "max": 0.3, "roundTo": 0.01 },
+    "amount": { "op": "random", "average": 0.2e18, "min": 0.1e18, "max": 0.3e18, "roundTo": 0.01e18 },
     "token": "ETH",
     "waitAfterSeconds": { "op": "random", "average": 3600, "min": 600 },
     "network": "testnet"
   },
   {
     "type": "bridge_polygon",
-    "amount": 10,
+    "amount": 10e18,
     "token": "WMATIC",
     "waitAfterSeconds": { "op": "random", "average": 3600, "min": 600 },
     "network": "testnet"
