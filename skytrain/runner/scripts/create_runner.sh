@@ -59,6 +59,7 @@ aws s3api create-bucket \
     --region "$region" \
     --bucket skytrain-runner-code-$region \
     --create-bucket-configuration "{\"LocationConstraint\": \"$region\"}"
+
 echo "Deploy function code to s3://skytrain-runner-code-$region"
 aws s3 cp --region "$region" deploy.zip s3://skytrain-runner-code-$region/deploy.zip
 
@@ -76,7 +77,7 @@ aws lambda update-function-configuration \
     --timeout 60
 
 echo "Create function skytrain-runner-$region"
-NONCE=$(($RANDOM % 10))
+NONCE=$(($RANDOM % 9))
 aws events put-rule \
     --region "$region" \
     --name skytrain-runner-$region \
