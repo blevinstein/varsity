@@ -71,12 +71,8 @@ aws lambda create-function \
     --code S3Bucket=skytrain-runner-code-$region,S3Key=deploy.zip \
     --handler index.run \
     --role arn:aws:iam::$AWS_ACCOUNT_ID:role/skytrain-runner-$region
-aws lambda update-function-configuration \
-    --region "$region" \
-    --function-name skytrain-runner-$region \
-    --timeout 60
 
-echo "Create function skytrain-runner-$region"
+echo "Create rule skytrain-runner-$region"
 NONCE=$(($RANDOM % 9))
 aws events put-rule \
     --region "$region" \
@@ -88,6 +84,10 @@ aws events put-targets \
     --rule skytrain-runner-$region \
     --targets "Id"="1","Arn"="arn:aws:lambda:$region:$AWS_ACCOUNT_ID:function:skytrain-runner-$region","Input"="'$JSON'"
 
+echo "Configure function skytrain-runner-$region"
+aws lambda wait function-exists \
+    --region "$region" \
+    --function-name skytrain-runner-$region
 aws lambda add-permission \
     --region "$region" \
     --function-name skytrain-runner-$region \
@@ -95,5 +95,9 @@ aws lambda add-permission \
     --action 'lambda:InvokeFunction' \
     --principal events.amazonaws.com \
     --source-arn arn:aws:events:$region:$AWS_ACCOUNT_ID:rule/skytrain-runner-$region
+aws lambda update-function-configuration \
+    --region "$region" \
+    --function-name skytrain-runner-$region \
+    --timeout 60
 
 done
