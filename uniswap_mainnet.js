@@ -10,6 +10,8 @@ const { abi: QuoterABI } = require("@uniswap/v3-periphery/artifacts/contracts/le
 const { abi: FactoryABI } = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json");
 const { abi: PoolABI } = require("@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json");
 
+const { abi: ERC20ABI } = require('@openzeppelin/contracts/build/contracts/ERC20.json');
+
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
@@ -17,9 +19,6 @@ const INFURA_ID = "07bc63faa17b4eae96c758bca58cfa85";
 
 // Mainnet
 // const UNISWAP_V3_SWAP_ROUTER_ADDRESS = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
-const UNISWAP_V3_FACTORY_ADDRESS = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
-const UNISWAP_V3_SWAP_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
-const UNISWAP_QUOTER_ADDRESS = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
 //const CHAIN_ID = 1;
 //const provider = new ethers.providers.JsonRpcProvider(
 //    `https://mainnet.infura.io/v3/${INFURA_ID}`);
@@ -28,8 +27,7 @@ const UNISWAP_QUOTER_ADDRESS = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
 const CHAIN_ID = 4;
 const provider = new ethers.providers.JsonRpcProvider(
     `https://rinkeby.infura.io/v3/${INFURA_ID}`);
-const quoterContract = new ethers.Contract(UNISWAP_QUOTER_ADDRESS, QuoterABI, provider);
-const factoryContract = new ethers.Contract(UNISWAP_V3_FACTORY_ADDRESS, FactoryABI, provider);
+const UNISWAP_V3_SWAP_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 
 const FEE = 3000;
 
@@ -67,17 +65,6 @@ function getCurrency(symbol, tokenData) {
   }
 }
 
-async function getPoolData(poolContract) {
-  const [token0, token1, fee, liquidity, slot] = await Promise.all([
-    poolContract.token0(),
-    poolContract.token1(),
-    poolContract.fee(),
-    poolContract.liquidity(),
-    poolContract.slot0()
-  ]);
-  return { token0, token1, fee, liquidity, sqrtPriceX96: slot[0], tick: slot[1] };
-}
-
 async function main() {
   const argv = yargs(hideBin(process.argv)).array('input').argv;
 
@@ -95,43 +82,12 @@ async function main() {
     wallet = new ethers.Wallet(privateKey, provider);
   }
 
+  console.log('Getting token data');
   const tokenData = await getJson('https://gateway.ipfs.io/ipns/tokens.uniswap.org');
   const fromCurrency = getCurrency(fromToken, tokenData);
   const toCurrency = getCurrency(toToken, tokenData);
 
-  const poolAddress = await factoryContract.getPool(
-      fromCurrency.address,
-      toCurrency.address,
-      FEE);
-  const poolContract = new ethers.Contract(poolAddress, PoolABI, provider);
-  const poolData = await getPoolData(poolContract);
-  const poolToken0 = fromCurrency.address == poolData.token0 ? fromCurrency : toCurrency;
-  const poolToken1 = fromCurrency.address == poolData.token1 ? fromCurrency : toCurrency;
-  const pool = new Pool(
-      poolToken0,
-      poolToken1,
-      poolData.fee,
-      poolData.sqrtPriceX96.toString(),
-      poolData.liquidity.toString(),
-      poolData.tick);
-
-  //const route = new Route([pool], fromCurrency, toCurrency);
-  /*
-  const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
-      fromCurrency.address,
-      toCurrency.address,
-      FEE,
-      BigInt(rawAmount * 1e18).toString(),
-      0);
-  const trade = await Trade.createUncheckedTrade({
-    route,
-    inputAmount: CurrencyAmount.fromRawAmount(fromCurrency, rawAmount * 1e18),
-    outputAmount: CurrencyAmount.fromRawAmount(toCurrency, quotedAmountOut.toString()),
-    tradeType: TradeType.EXACT_INPUT,
-  });
-  console.log(trade);
-  */
-
+  console.log('Getting route from router');
   const route = await router.route(
     CurrencyAmount.fromRawAmount(fromCurrency, rawAmount * 1e18),
     toCurrency,
@@ -142,8 +98,20 @@ async function main() {
       deadline: Math.floor(new Date().getTime() / 1000) + 6 * 60 * 60,
     }
   );
-  console.log(route);
+  //console.log(route);
   console.log(`Found route! Cost \$${route.estimatedGasUsedUSD.toFixed()}`);
+
+  if (!fromCurrency.isNative) {
+    const fromContract = new ethers.Contract(fromCurrency.address, ERC20ABI, wallet);
+    const allowance = parseInt(await fromContract.allowance(address, UNISWAP_V3_SWAP_ROUTER_ADDRESS));
+    console.log(`Allowance is ${allowance / 1e18}`);
+    if (allowance < rawAmount * 1e18) {
+      console.log(`Increase allowance to ${rawAmount}`);
+      if (!dryRun) {
+        await fromContract.approve(UNISWAP_V3_SWAP_ROUTER_ADDRESS, BigInt(rawAmount * 1e18).toString());
+      }
+    }
+  }
 
   const transaction = {
     data: route.methodParameters.calldata,
@@ -151,15 +119,16 @@ async function main() {
     value: route.methodParameters.value,
     from: address,
     gasPrice: route.gasPriceWei,
-    gasLimit: route.estimatedGasUsed * 1.5,
+    gasLimit: route.estimatedGasUsed * 1.2,
   };
 
-  console.log(transaction);
+  //console.log(transaction);
 
+  console.log(`Performing swap...`);
   if (!dryRun) {
-    console.log(`Performing transaction...`);
     const result = await wallet.sendTransaction(transaction);
-    console.log(result);
+    console.log(result.hash);
+    //console.log(result);
   }
 
   console.log('Done');
