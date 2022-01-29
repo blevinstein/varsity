@@ -58,10 +58,10 @@ function getCurrency(symbol, tokenData) {
 }
 
 async function main() {
-  const argv = yargs(hideBin(process.argv)).array('input').argv;
+  const argv = yargs(hideBin(process.argv)).array('input').string('amount').argv;
 
   const dryRun = argv.noDryRun === undefined;
-  const rawAmount = parseFloat(argv.amount);
+  const rawAmount = argv.amount;
   const fromToken = argv.from;
   const toToken = argv.to;
 
@@ -79,9 +79,15 @@ async function main() {
   const fromCurrency = getCurrency(fromToken, tokenData);
   const toCurrency = getCurrency(toToken, tokenData);
 
+  const fromContract = fromCurrency.isNative || new ethers.Contract(fromCurrency.address, ERC20ABI, wallet || provider);
+
+  const balance = fromCurrency.isNative ? await provider.getBalance(address) : await fromContract.balanceOf(address);
+  console.log(`Convert ${rawAmount} / ${balance / 1e18}`);
+  const amount = rawAmount.toLowerCase() == 'all' ? balance : parseFloat(rawAmount) * 1e18;
+
   console.log('Getting route from router');
   const route = await router.route(
-    CurrencyAmount.fromRawAmount(fromCurrency, rawAmount * 1e18),
+    CurrencyAmount.fromRawAmount(fromCurrency, amount),
     toCurrency,
     TradeType.EXACT_INPUT,
     {
@@ -90,20 +96,20 @@ async function main() {
       deadline: Math.floor(new Date().getTime() / 1000) + /* 6 hours */ 6 * 60 * 60,
     }
   );
-  console.log(route);
+  //console.log(route);
   console.log(`Found route! Cost \$${route.estimatedGasUsedUSD.toFixed()} / ${route.estimatedGasUsed} wei`);
+  console.log(`Quote: ${route.quote.toFixed()} (adj ${route.quoteGasAdjusted.toFixed()})`);
 
   if (!fromCurrency.isNative) {
-    const fromContract = new ethers.Contract(fromCurrency.address, ERC20ABI, wallet || provider);
     const allowance = parseInt(await fromContract.allowance(address, UNISWAP_V3_SWAP_ROUTER_ADDRESS));
     console.log(`Allowance is ${allowance / 1e18}`);
-    if (allowance < rawAmount * 1e18) {
-      console.log(`Increase allowance to ${rawAmount}`);
+    if (allowance < amount) {
+      console.log(`Increase allowance to ${amount / 1e18}`);
       if (!dryRun) {
-        const estimatedGas = await fromContract.estimateGas.approve(UNISWAP_V3_SWAP_ROUTER_ADDRESS, BigInt(rawAmount * 1e18).toString());
+        const estimatedGas = await fromContract.estimateGas.approve(UNISWAP_V3_SWAP_ROUTER_ADDRESS, BigInt(amount).toString());
         console.log(`Estimated gas: ${estimatedGas}`);
         await fromContract.approve(
-            UNISWAP_V3_SWAP_ROUTER_ADDRESS, BigInt(rawAmount * 1e18).toString(),
+            UNISWAP_V3_SWAP_ROUTER_ADDRESS, BigInt(amount).toString(),
             { gasLimit: Math.floor(estimatedGas * 1.2) });
       }
     }
