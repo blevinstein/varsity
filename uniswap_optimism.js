@@ -5,16 +5,17 @@ const https = require('https');
 const { AlphaRouter } = require('@uniswap/smart-order-router');
 const { CurrencyAmount, Ether, Percent, Token, TradeType } = require('@uniswap/sdk-core');
 
+const { abi: ERC20ABI } = require('@openzeppelin/contracts/build/contracts/ERC20.json');
+
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
-
-const UNISWAP_V3_SWAP_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 
 // Optimism
 const CHAIN_ID = 10;
 const WETH_ADDRESS = '0x4200000000000000000000000000000000000006';
 const provider = new ethers.providers.JsonRpcProvider(
     'https://mainnet.optimism.io');
+const UNISWAP_V3_SWAP_ROUTER_ADDRESS = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 
 const router = new AlphaRouter({
   chainId: CHAIN_ID,
@@ -73,10 +74,12 @@ async function main() {
     wallet = new ethers.Wallet(privateKey, provider);
   }
 
+  console.log('Getting token data');
   const tokenData = await getJson('https://static.optimism.io/optimism.tokenlist.json');
   const fromCurrency = getCurrency(fromToken, tokenData);
   const toCurrency = getCurrency(toToken, tokenData);
 
+  console.log('Getting route from router');
   const route = await router.route(
     CurrencyAmount.fromRawAmount(fromCurrency, rawAmount * 1e18),
     toCurrency,
@@ -87,7 +90,24 @@ async function main() {
       deadline: Math.floor(new Date().getTime() / 1000) + /* 6 hours */ 6 * 60 * 60,
     }
   );
-  console.log(`Found route! Cost \$${route.estimatedGasUsedUSD.toFixed()}`);
+  console.log(route);
+  console.log(`Found route! Cost \$${route.estimatedGasUsedUSD.toFixed()} / ${route.estimatedGasUsed} wei`);
+
+  if (!fromCurrency.isNative) {
+    const fromContract = new ethers.Contract(fromCurrency.address, ERC20ABI, wallet || provider);
+    const allowance = parseInt(await fromContract.allowance(address, UNISWAP_V3_SWAP_ROUTER_ADDRESS));
+    console.log(`Allowance is ${allowance / 1e18}`);
+    if (allowance < rawAmount * 1e18) {
+      console.log(`Increase allowance to ${rawAmount}`);
+      if (!dryRun) {
+        const estimatedGas = await fromContract.estimateGas.approve(UNISWAP_V3_SWAP_ROUTER_ADDRESS, BigInt(rawAmount * 1e18).toString());
+        console.log(`Estimated gas: ${estimatedGas}`);
+        await fromContract.approve(
+            UNISWAP_V3_SWAP_ROUTER_ADDRESS, BigInt(rawAmount * 1e18).toString(),
+            { gasLimit: Math.floor(estimatedGas * 1.2) });
+      }
+    }
+  }
 
   const transaction = {
     data: route.methodParameters.calldata,
@@ -95,19 +115,30 @@ async function main() {
     value: route.methodParameters.value,
     from: address,
     gasPrice: route.gasPriceWei,
-    gasLimit: route.estimatedGasUsed * 1.5,
+    gasLimit: Math.floor(route.estimatedGasUsed * 2),
   };
 
-  console.log(route);
-  console.log(transaction);
+  //console.log(transaction);
 
+  console.log(`Performing swap...`);
   if (!dryRun) {
-    console.log(`Performing transaction...`);
     const result = await wallet.sendTransaction(transaction);
-    console.log(result);
+    console.log(result.hash);
+    //console.log(result);
   }
-
-  console.log('Done');
 }
 
-main();
+process.on('exit', () => {
+  console.log('Node process shutting down.');
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception!');
+  console.error(error);
+});
+
+main()
+  .then(() => console.log('Done'))
+  .catch(error => {
+    console.error(error);
+  });

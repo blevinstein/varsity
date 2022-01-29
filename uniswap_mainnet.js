@@ -3,19 +3,14 @@ const ethers = require('ethers');
 const fs = require('fs');
 const https = require('https');
 const { AlphaRouter } = require('@uniswap/smart-order-router');
-const { Pool, Route } = require('@uniswap/v3-sdk');
 const { CurrencyAmount, Ether, Percent, Token, TradeType } = require('@uniswap/sdk-core');
-
-const { abi: QuoterABI } = require("@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json");
-const { abi: FactoryABI } = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json");
-const { abi: PoolABI } = require("@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json");
 
 const { abi: ERC20ABI } = require('@openzeppelin/contracts/build/contracts/ERC20.json');
 
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 
-const INFURA_ID = "07bc63faa17b4eae96c758bca58cfa85";
+const infura_id = "07bc63faa17b4eae96c758bca58cfa85";
 
 // Mainnet
 // const UNISWAP_V3_SWAP_ROUTER_ADDRESS = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
@@ -95,7 +90,7 @@ async function main() {
     {
       recipient: address,
       slippageTolerance: new Percent(5, 100),
-      deadline: Math.floor(new Date().getTime() / 1000) + 6 * 60 * 60,
+      deadline: Math.floor(new Date().getTime() / 1000) + /* 6 hours */ 6 * 60 * 60,
     }
   );
   //console.log(route);
@@ -130,8 +125,19 @@ async function main() {
     console.log(result.hash);
     //console.log(result);
   }
-
-  console.log('Done');
 }
 
-main();
+process.on('exit', () => {
+  console.log('Node process shutting down.');
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception!');
+  console.error(error);
+});
+
+main()
+  .then(() => console.log('Done'))
+  .catch(error => {
+    console.error(error);
+  });
